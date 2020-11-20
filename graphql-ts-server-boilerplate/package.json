@@ -16,6 +16,7 @@
       "bcryptjs": "^2.4.3",
       "gql2ts": "^1.10.1",
       "graphql-import": "^1.0.2",
+      "graphql-request": "^3.3.0",
       "graphql-yoga": "^1.18.3",
       "nodemon": "^2.0.6",
       "pg": "^8.5.1",
@@ -25,9 +26,10 @@
       "uuid": "^8.3.1"
    },
    "scripts": {
-      "start": "nodemon --exec ts-node --files src/index.ts",
+      "start": "SET NODE_ENV=development & nodemon --exec ts-node --files src/index.ts",
+      "test-server": "SET NODE_ENV=test & ts-node --files src/index.ts",
       "gen-schema-types": "gql2ts src/schema.graphql -o src/types/schema.d.ts",
-      "test": "jest"
+      "test": "SET NODE_ENV=test & jest"
    },
    "jest": {
       "transform": {
