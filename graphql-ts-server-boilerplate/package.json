@@ -32,7 +32,7 @@
       "start": "NODE_ENV=development nodemon --exec ts-node --files src/index.ts",
       "test-server": "NODE_ENV=test ts-node --files src/index.ts",
       "gen-schema-types": "gql2ts src/schema.graphql -o src/types/schema.d.ts",
-      "test": "NODE_ENV=test jest"
+      "test": "NODE_ENV=test jest --forceExit"
    },
    "jest": {
       "transform": {
