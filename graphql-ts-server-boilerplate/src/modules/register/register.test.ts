@@ -1,16 +1,11 @@
 import { request} from 'graphql-request';
-import { AddressInfo } from 'net';
 import { User } from '../../entity/User';
-import { startServer } from '../../startSever';
+import { createTypeormConn } from '../../utils/createTypeORMConn';
 import {  duplicatEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from './errorMessages';
-// duplicatEmail,
 
-let getHost = () => "";
 
 beforeAll(async () => {
-  const app = await startServer();
-  const { port } = app.address() as AddressInfo;
-  getHost = () => `http://127.0.0.1:${port}`;
+ await createTypeormConn()
 });
 
 
@@ -31,7 +26,7 @@ mutation {
 describe("A register mutation",  () => {
   // check if we can register a user
   it("should register a valid user", async () => {
-  const response = await request(getHost(), mutation(email, password));
+  const response = await request(process.env.TEST_HOST as string, mutation(email, password));
   expect(response).toEqual({ register: null });
   const users = await User.find({ where: { email } });
   expect(users).toHaveLength(1);
@@ -42,7 +37,7 @@ describe("A register mutation",  () => {
 
   // check if email already exists
   it("should not register a duplicate user", async () => {
-  const response = await request(getHost(), mutation(email, password));
+  const response = await request(process.env.TEST_HOST as string, mutation(email, password));
   expect(response.register).toHaveLength(1);
   expect(response.register[0]).toEqual({
   path: "email",
@@ -52,7 +47,7 @@ describe("A register mutation",  () => {
 
   // check if email length is badly formated
   it("should not register a user with an short email", async () => {
-  const response: any = await request(getHost(), mutation("em", password));
+  const response: any = await request(process.env.TEST_HOST as string, mutation("em", password));
   expect(response.register).toHaveLength(2);
   expect(response.register).toEqual([{
     "message": emailNotLongEnough,
@@ -66,7 +61,7 @@ describe("A register mutation",  () => {
 
   // check if email is badly formated
   it("should not register a user with an invalid email", async () => {
-  const response = await request(getHost(), mutation("email123", password));
+  const response = await request(process.env.TEST_HOST as string, mutation("email123", password));
   expect(response.register).toHaveLength(1);
   expect(response.register).toEqual([{
     "message": invalidEmail,
@@ -77,7 +72,7 @@ describe("A register mutation",  () => {
 
   //check if password is badly formated
   it("should not register a user with an invalid password", async () => {
-    const response: any = await request(getHost(), mutation(email, "a"));
+    const response: any = await request(process.env.TEST_HOST as string, mutation(email, "a"));
     expect(response.register).toHaveLength(1);
     expect(response.register).toEqual([{
         "message": passwordNotLongEnough,
@@ -88,7 +83,7 @@ describe("A register mutation",  () => {
 
   // check if both email and password are badly formated
   it("should not register a user with an invalid password and invalid email", async () => {
-    const response: any = await request(getHost(), mutation("a", "a"));
+    const response: any = await request(process.env.TEST_HOST as string, mutation("a", "a"));
     expect(response.register).toHaveLength(3);
     expect(response.register).toEqual([{
         "message": emailNotLongEnough,
