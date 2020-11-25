@@ -2,8 +2,8 @@ import { request} from 'graphql-request';
 import { AddressInfo } from 'net';
 import { User } from '../../entity/User';
 import { startServer } from '../../startSever';
-import { duplicatEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from './errorMessages';
-
+import {  duplicatEmail, emailNotLongEnough, invalidEmail, passwordNotLongEnough } from './errorMessages';
+// duplicatEmail,
 
 let getHost = () => "";
 
@@ -31,7 +31,6 @@ mutation {
 describe("A register mutation",  () => {
   // check if we can register a user
   it("should register a valid user", async () => {
-
   const response = await request(getHost(), mutation(email, password));
   expect(response).toEqual({ register: null });
   const users = await User.find({ where: { email } });
@@ -39,77 +38,69 @@ describe("A register mutation",  () => {
   const user = users[0];
   expect(user.email).toEqual(email);
   expect(user.password).not.toEqual(password);
-
   })
+
   // check if email already exists
   it("should not register a duplicate user", async () => {
-
-  const response2 = await request(getHost(), mutation(email, password));
-  expect(response2.register).toHaveLength(1);
-  expect(response2.register[0].path).toEqual({
-    path: "email",
-    message: duplicatEmail
+  const response = await request(getHost(), mutation(email, password));
+  expect(response.register).toHaveLength(1);
+  expect(response.register[0]).toEqual({
+  path: "email",
+  message: duplicatEmail
   });
-
-  })
+  });
 
   // check if email length is badly formated
   it("should not register a user with an short email", async () => {
-  const response3 = await request(getHost(), mutation("em", password));
-  expect(response3.register).toHaveLength(1);
-  expect(response3.register[0].path).toEqual({
-    register: [
-      {
-    path: "email",
-    message: emailNotLongEnough
-  },
-      {
-    path: "email",
-    message: invalidEmail
-  },
-]});
+  const response: any = await request(getHost(), mutation("em", password));
+  expect(response.register).toHaveLength(2);
+  expect(response.register).toEqual([{
+    "message": emailNotLongEnough,
+    "path": "email"
+  }, {
+    "message": invalidEmail,
+    "path": "email"
+  }]
+)
   })
 
   // check if email is badly formated
   it("should not register a user with an invalid email", async () => {
-  const response4 = await request(getHost(), mutation("email123", password));
-  expect(response4.register).toHaveLength(1);
-  expect(response4.register[0].path).toEqual({
-    path: "email",
-    message: invalidEmail
-  },
+  const response = await request(getHost(), mutation("email123", password));
+  expect(response.register).toHaveLength(1);
+  expect(response.register).toEqual([{
+    "message": invalidEmail,
+    "path": "email"
+  }],
 );
   })
 
   //check if password is badly formated
   it("should not register a user with an invalid password", async () => {
-  const response5 = await request(getHost(), mutation(email, "ab"));
-  expect(response5.register).toHaveLength(1);
-  expect(response5.register[0].path).toEqual({
-    path: "password",
-    message: passwordNotLongEnough
+    const response: any = await request(getHost(), mutation(email, "a"));
+    expect(response.register).toHaveLength(1);
+    expect(response.register).toEqual([{
+        "message": passwordNotLongEnough,
+        "path": "password"
+      }]
+    )
   });
-  })
 
   // check if both email and password are badly formated
   it("should not register a user with an invalid password and invalid email", async () => {
-  const response6 = await request(getHost(), mutation("ab", "ab"));
-  expect(response6.register).toHaveLength(1);
-  expect(response6.register[0].path).toEqual({
-    register: [
-      {
-    path: "email",
-    message: emailNotLongEnough
-      },
-      {
-    path: "email",
-    message: invalidEmail
-      },
-      {
-    path: "password",
-    message: passwordNotLongEnough
-      },
-]});
-  })
+    const response: any = await request(getHost(), mutation("a", "a"));
+    expect(response.register).toHaveLength(3);
+    expect(response.register).toEqual([{
+        "message": emailNotLongEnough,
+        "path": "email"
+      }, {
+        "message": invalidEmail,
+        "path": "email"
+      }, {
+        "message": passwordNotLongEnough,
+        "path": "password"
+      },]
+    )
+  });
 
 });
