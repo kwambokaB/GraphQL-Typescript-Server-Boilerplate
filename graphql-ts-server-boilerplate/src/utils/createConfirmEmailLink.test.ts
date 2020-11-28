@@ -1,15 +1,17 @@
 import * as Redis from 'ioredis';
 import fetch from "node-fetch";
+import { Connection } from 'typeorm';
 
 import { User } from "../entity/User"
 import { createConfirmEmailLink } from "./createConfirmEmailLink"
 import { createTypeormConn } from "./createTypeORMConn"
 
-
 let userId: string;
+const redis =  new Redis();
+let connection: Connection;
 
 beforeAll(async () => {
-   await createTypeormConn()
+   connection = await createTypeormConn()
    const user = await User.create({
        email: "testuser@gmail.com",
        password:"testuser123"
@@ -17,9 +19,12 @@ beforeAll(async () => {
    userId = user.id;
    });
 
+   afterAll(async () => {
+       connection.close();
+   });
+
 test("Make sure createConfirmLink works", async() => {
     // confirm that link works
-    const redis =  new Redis()
     const url = await createConfirmEmailLink(process.env.TEST_HOST as string, userId, redis);
     const response  = await fetch(url);
     const text = await response.text();
